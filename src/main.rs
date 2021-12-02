@@ -1,23 +1,5 @@
-use std::fs;
+mod day01;
 
 fn main() {
-    let input = fs::read_to_string("inputs/day01").unwrap();
-    let numbers: Vec<i32> = input.lines().map(|l| l.parse().unwrap()).collect();
-    println!("{}", count_increments(&numbers));
-
-    let mut sums = vec![];
-    for i in 0..numbers.len() - 2 {
-        sums.push(numbers[i] + numbers[i + 1] + numbers[i + 2]);
-    }
-    println!("{}", count_increments(&sums));
-}
-
-fn count_increments(numbers: &Vec<i32>) -> i32 {
-    let mut result = 0;
-    for (i, &num) in numbers.iter().enumerate() {
-        if i > 0 && num > numbers[i - 1] {
-            result += 1;
-        }
-    }
-    return result;
+    day01::run()
 }
