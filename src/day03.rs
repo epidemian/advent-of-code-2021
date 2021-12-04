@@ -4,29 +4,20 @@ pub fn run() {
 }
 
 fn part1() {
-  // Keep numbers as string. Easier random access than bit-fiddling.
-  let nums: Vec<&str> = include_str!("inputs/day03").lines().collect();
-  let mut counts = vec![0; nums.first().unwrap().len()];
-  for num in nums.iter() {
-    for (i, ch) in num.chars().enumerate() {
-      counts[i] += if ch == '1' { 1 } else { -1 }
-    }
+  let nums = get_input_numbers();
+  let bit_size = get_bit_size();
+
+  let mut gamma = 0;
+  for i in 0..bit_size {
+    gamma |= most_common_bit_at(nums.as_ref(), i) << i;
   }
-  let gamma = counts.iter().fold(0, |acc, &c| (acc << 1) | (c > 0) as i32);
-  let epsilon = !gamma & (1 << counts.len()) - 1;
+  let epsilon = !gamma & (1 << bit_size) - 1;
   println!("{}", gamma * epsilon);
 }
 
 fn part2() {
-  let input = include_str!("inputs/day03");
-  let nums: Vec<i32> = input
-    .lines()
-    .map(|s| i32::from_str_radix(s, 2).unwrap())
-    .collect();
-  let max_bit_index = input.lines().next().unwrap().len() - 1;
-
-  let mut oxigen_nums = nums.clone();
-  let mut index: usize = max_bit_index;
+  let mut oxigen_nums = get_input_numbers();
+  let mut index = get_bit_size() - 1;
   loop {
     let value = most_common_bit_at(oxigen_nums.as_ref(), index);
     oxigen_nums.retain(|&n| bit_at(n, index) == value);
@@ -35,10 +26,9 @@ fn part2() {
     }
     index -= 1;
   }
-  let oxigen_generator_rating = oxigen_nums.first().unwrap();
 
-  let mut co2_nums = nums.clone();
-  let mut index: usize = max_bit_index;
+  let mut co2_nums = get_input_numbers();
+  let mut index = get_bit_size() - 1;
   loop {
     let value = most_common_bit_at(co2_nums.as_ref(), index);
     co2_nums.retain(|&n| bit_at(n, index) != value);
@@ -47,9 +37,21 @@ fn part2() {
     }
     index -= 1;
   }
-  let co2_scrubber_rating = co2_nums.first().unwrap();
 
-  println!("{}", oxigen_generator_rating * co2_scrubber_rating)
+  println!("{}", oxigen_nums[0] * co2_nums[0])
+}
+
+static INPUT: &str = include_str!("inputs/day03");
+
+fn get_input_numbers() -> Vec<i32> {
+  INPUT
+    .lines()
+    .map(|s| i32::from_str_radix(s, 2).unwrap())
+    .collect()
+}
+
+fn get_bit_size() -> usize {
+  INPUT.lines().next().unwrap().len()
 }
 
 fn bit_at(n: i32, i: usize) -> i32 {
