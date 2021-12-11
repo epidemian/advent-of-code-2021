@@ -25,3 +25,6 @@ This one was an opportunity to learn about structs, even though i didn't end up 
 This one got me quite stuck. The naive solution of using a vector just like the challenge description example worked fine for 80 days, but got impossible for 256 because of the exponential growth. Not even counting on Rust's performance would've saved me, as the memory consumption would be too high for my computer: ~1.7TB if using a u8-array for the fish population.
 
 After banging my head with maths for a while trying to find a closed-form solution using 2^\<something\> given each fish initial timer —for a fish simulation without the initial 2-day reproduction delay it was easy enough— i gave up and looked for a hint online. Found the idea of counting all the fish with the same internal timer the same way (seems so obvious in hindsight!) on [@riffraff's blog](https://riffraff.info/2021/12/advent-of-code-2021-day-6/). Thanks Gabriele!
+
+### Day 7
+An easy one. The only trick used here was to express the sum 1+2+...+N as (N+1)*N/2.
