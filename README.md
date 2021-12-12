@@ -28,3 +28,6 @@ After banging my head with maths for a while trying to find a closed-form soluti
 
 ### Day 7
 An easy one. The only trick used here was to express the sum 1+2+...+N as (N+1)*N/2.
+
+### Day 8
+A challenging but very interesting one. I'm happy with the solution, although it could probably benefit from modeling the signal patterns as sets and then doing set intersection with the output patterns.
