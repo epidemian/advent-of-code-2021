@@ -20,7 +20,13 @@ fn main() {
         day08::run,
     ];
     let args: Vec<String> = env::args().collect();
-    let day_num: usize = args.last().unwrap().parse().unwrap();
-
-    days[day_num - 1]()
+    if args.len() > 1 {
+        let day_num: usize = args[1].parse().unwrap();
+        days[day_num - 1]()
+    } else {
+        for (i, fun) in days.iter().enumerate() {
+            println!("day {}", i + 1);
+            fun()
+        }
+    }
 }
