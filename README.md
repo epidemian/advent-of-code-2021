@@ -34,3 +34,8 @@ A challenging but very interesting one. I'm happy with the solution, although it
 
 ### Day 9
 A 2D tiles one! I like these! The naive solution, with a vec-of-vecs, was easy enough to implement and worked fine, but it was nice to refactor the modeling of the sea floor as a Map of (x, y) tuples. This made accessing the map and checking boundaries much simpler :)
+
+### Day 10
+A parsing bracket-balancing one. Learned about iter's filter_map() and partition() to try to separate the corrupted lines from the incomplete ones, but ended up a good ol' for loop and pushing into separate vectors, as that seemed more readable to me.
+
+I did however enjoy refactoring the two separate functions get_corrupted_char(line) and get_unclosed_brackets(line), which had a lot of repeated parsing logic, into a single function that returns a Result\<Incomplete, Corrupted\>.

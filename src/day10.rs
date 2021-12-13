@@ -1,8 +1,16 @@
 pub fn run() {
-  let lines: Vec<&str> = include_str!("inputs/day10").lines().collect();
-  let total_score: i32 = lines
+  let mut corrupted_chars = vec![];
+  let mut unclosed_brackets = vec![];
+
+  for line in include_str!("inputs/day10").lines() {
+    match analyze_line(line) {
+      Ok(Incomplete { unclosed }) => unclosed_brackets.push(unclosed),
+      Err(Corrupted(ch)) => corrupted_chars.push(ch),
+    }
+  }
+
+  let syntax_error_score: i32 = corrupted_chars
     .iter()
-    .filter_map(|l| get_corrupted_char(l))
     .map(|ch| match ch {
       ')' => 3,
       ']' => 57,
@@ -11,13 +19,12 @@ pub fn run() {
       _ => unreachable!(),
     })
     .sum();
-  println!("{}", total_score);
+  println!("{}", syntax_error_score);
 
-  let mut autocomplete_scores: Vec<i64> = lines
+  let mut autocomplete_scores: Vec<i64> = unclosed_brackets
     .iter()
-    .filter_map(|l| get_unclosed_brackets(l))
-    .map(|unclosed_brackets| {
-      unclosed_brackets
+    .map(|unclosed| {
+      unclosed
         .iter()
         .rev()
         .map(|ch| match ch {
@@ -34,35 +41,12 @@ pub fn run() {
   println!("{:?}", autocomplete_scores[autocomplete_scores.len() / 2]);
 }
 
-fn get_corrupted_char(line: &str) -> Option<char> {
-  let mut unclosed_brackets = vec![];
-  for ch in line.chars() {
-    match ch {
-      '(' | '[' | '{' | '<' => unclosed_brackets.push(ch),
-      ')' | ']' | '}' | '>' => {
-        let open_char = match ch {
-          ')' => '(',
-          ']' => '[',
-          '}' => '{',
-          '>' => '<',
-          _ => unreachable!(),
-        };
-        match unclosed_brackets.pop() {
-          None => return Some(ch),
-          Some(unclosed_ch) => {
-            if unclosed_ch != open_char {
-              return Some(ch);
-            }
-          }
-        }
-      }
-      _ => unreachable!(),
-    }
-  }
-  None
+struct Corrupted(char);
+struct Incomplete {
+  unclosed: Vec<char>,
 }
 
-fn get_unclosed_brackets(line: &str) -> Option<Vec<char>> {
+fn analyze_line(line: &str) -> Result<Incomplete, Corrupted> {
   let mut unclosed_brackets = vec![];
   for ch in line.chars() {
     match ch {
@@ -76,12 +60,12 @@ fn get_unclosed_brackets(line: &str) -> Option<Vec<char>> {
           _ => unreachable!(),
         };
         match unclosed_brackets.last() {
-          None => return None,
+          None => return Err(Corrupted(ch)),
           Some(&unclosed_ch) => {
             if unclosed_ch == open_char {
               unclosed_brackets.pop();
             } else {
-              return None;
+              return Err(Corrupted(ch));
             }
           }
         }
@@ -89,5 +73,7 @@ fn get_unclosed_brackets(line: &str) -> Option<Vec<char>> {
       _ => unreachable!(),
     }
   }
-  Some(unclosed_brackets)
+  Ok(Incomplete {
+    unclosed: unclosed_brackets,
+  })
 }
