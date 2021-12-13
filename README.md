@@ -33,9 +33,14 @@ An easy one. The only trick used here was to express the sum 1+2+...+N as (N+1)*
 A challenging but very interesting one. I'm happy with the solution, although it could probably benefit from modeling the signal patterns as sets and then doing set intersection with the output patterns.
 
 ### Day 9
-A 2D tiles one! I like these! The naive solution, with a vec-of-vecs, was easy enough to implement and worked fine, but it was nice to refactor the modeling of the sea floor as a Map of (x, y) tuples. This made accessing the map and checking boundaries much simpler :)
+A 2D tiles one! I like these! The naive solution, with a vec-of-vecs, was easy enough to implement and worked fine, but it was nice to refactor the modeling of the sea floor as a `Map` of (x, y) tuples. This made accessing the map and checking boundaries much simpler :)
 
 ### Day 10
-A parsing bracket-balancing one. Learned about iter's filter_map() and partition() to try to separate the corrupted lines from the incomplete ones, but ended up a good ol' for loop and pushing into separate vectors, as that seemed more readable to me.
+A parsing bracket-balancing one. Learned about iter's `filter_map()` and `partition()` to try to separate the corrupted lines from the incomplete ones, but ended up using a good ol' for loop and pushing into separate vectors, as that seemed more readable to me.
 
-I did however enjoy refactoring the two separate functions get_corrupted_char(line) and get_unclosed_brackets(line), which had a lot of repeated parsing logic, into a single function that returns a Result\<Incomplete, Corrupted\>.
+I did however enjoy refactoring the two separate functions `get_corrupted_char(line)` and `get_unclosed_brackets(line)`, which had a lot of repeated parsing logic, into a single function that returns a `Result<Incomplete, Corrupted>`.
+
+### Day 11
+Yet another 2D puzzle, yay! The emergent behavior of the octopi synchronizing their flashes was a really nice surprise ^_^
+
+This time i considered going directly for the `Map<(i32, i32), Value>` representation of the grid, but i'm glad i resisted that urge, since the static-size array solution ended up working very nicely. The initial code was super ugly in terms of nested loops and conditionals, but after refactoring the "unprocessed flashes" into a stack (a vector) instead of checking the whole map for values over 9, the messiness of the code was reduced substantially.
