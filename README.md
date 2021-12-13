@@ -31,3 +31,6 @@ An easy one. The only trick used here was to express the sum 1+2+...+N as (N+1)*
 
 ### Day 8
 A challenging but very interesting one. I'm happy with the solution, although it could probably benefit from modeling the signal patterns as sets and then doing set intersection with the output patterns.
+
+### Day 9
+A 2D tiles one! I like these! The naive solution, with a vec-of-vecs, was easy enough to implement and worked fine, but it was nice to refactor the modeling of the sea floor as a Map of (x, y) tuples. This made accessing the map and checking boundaries much simpler :)
