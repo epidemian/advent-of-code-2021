@@ -44,3 +44,6 @@ I did however enjoy refactoring the two separate functions `get_corrupted_char(l
 Yet another 2D puzzle, yay! The emergent behavior of the octopi synchronizing their flashes was a really nice surprise ^_^
 
 This time i considered going directly for the `Map<(i32, i32), Value>` representation of the grid, but i'm glad i resisted that urge, since the static-size array solution ended up working very nicely. The initial code was super ugly in terms of nested loops and conditionals, but after refactoring the "unprocessed flashes" into a stack (a vector) instead of checking the whole map for values over 9, the messiness of the code was reduced substantially.
+
+### Day 13
+A very fun geometric puzzle. Got a dumb off-by-one error when printing the paper at the last step and was trying to debug folding logic that was never broken to being with 😖
