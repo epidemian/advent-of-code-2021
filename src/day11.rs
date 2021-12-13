@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 const SIZE: usize = 10;
 
 pub fn run() {
@@ -11,51 +9,44 @@ pub fn run() {
   }
 
   let mut step = 0;
-  let mut total_flashes = 0;
+  let mut total_flash_count = 0;
   loop {
-    let mut flashed: HashSet<(usize, usize)> = HashSet::new();
+    let mut step_flash_count = 0;
+    let mut flashes = vec![];
+
     for y in 0..SIZE {
       for x in 0..SIZE {
         octopi[y][x] += 1;
-      }
-    }
-
-    'process_flashes: loop {
-      for y in 0..SIZE {
-        for x in 0..SIZE {
-          if octopi[y][x] >= 10 && !flashed.contains(&(x, y)) {
-            flashed.insert((x, y));
-            for dy in -1_i32..=1 {
-              for dx in -1_i32..=1 {
-                let y2 = (y as i32) + dy;
-                let x2 = (x as i32) + dx;
-                if x2 >= 0 && x2 < SIZE as i32 && y2 >= 0 && y2 < SIZE as i32 {
-                  octopi[y2 as usize][x2 as usize] += 1;
-                }
-              }
-            }
-            continue 'process_flashes;
-          }
+        if octopi[y][x] >= 10 {
+          flashes.push((x, y))
         }
       }
-      break 'process_flashes;
     }
 
-    for y in 0..SIZE {
-      for x in 0..SIZE {
-        if octopi[y][x] >= 10 {
-          octopi[y][x] = 0
+    while let Some((x, y)) = flashes.pop() {
+      octopi[y][x] = 0;
+      step_flash_count += 1;
+      for y2 in y.saturating_sub(1)..=(y + 1).min(SIZE - 1) {
+        for x2 in x.saturating_sub(1)..=(x + 1).min(SIZE - 1) {
+          if octopi[y2][x2] == 0 {
+            // Neighbor already flashed.
+            continue;
+          }
+          octopi[y2][x2] += 1;
+          if octopi[y2][x2] >= 10 && !flashes.contains(&(x2, y2)) {
+            flashes.push((x2, y2));
+          }
         }
       }
     }
 
     step += 1;
-    total_flashes += flashed.len();
+    total_flash_count += step_flash_count;
 
     if step == 100 {
-      println!("{}", total_flashes);
+      println!("{}", total_flash_count);
     }
-    if flashed.len() == SIZE * SIZE {
+    if step_flash_count == SIZE * SIZE {
       println!("{}", step);
       break;
     }
