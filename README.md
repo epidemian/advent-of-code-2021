@@ -53,3 +53,8 @@ A very fun geometric puzzle. Got a dumb off-by-one error when printing the paper
 
 ### Day 14: Extended Polymerization
 The naive solution of generating the polymer worked well for computing the 10 steps of part 1, but completely failed for the 40 steps of part 2, as that would require TBs of storage. I think that the idea of keeping count of all element pairs and thinking only in terms of what new pairs those generate was inspired by Day 6: Lanternfish, which also featured exponential growth :)
+
+### Day 15: Chiton
+Oof, this one was challenging. I initially considered trying to find a path using only right and down moves, as the example case only showcased moves in those directions. This greatly simplified the "path finding" algorithm, and luckily it worked for part 1. But not for part 2. Oh no. Path 2 required a more general solution, and damn it if i were to remember how Dijsktra's algorithm worked. I'm not even sure i ever knew it at any point in my life.
+
+So i just hacked my way through trying to patch the first solution with some "reassessment" of path costs. It worked in the end, but i doubt this algorithm is calculating path cost for general cases, and it most likely is terribly inefficient.
