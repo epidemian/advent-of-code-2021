@@ -50,39 +50,26 @@ fn get_path_total_risk(risk_map: &Vec<Vec<u32>>) -> u32 {
   cost_map[size - 1][size - 1]
 }
 
+const NEIGHBOR_DIFFS: [(i32, i32); 4] = [(1, 0), (-1, 0), (0, 1), (0, -1)];
+
 fn reassess_cost_at(x: usize, y: usize, cost_map: &mut Vec<Vec<u32>>, risk_map: &Vec<Vec<u32>>) {
-  let mut neighbors = Vec::with_capacity(4);
-  if x > 0 {
-    neighbors.push((x - 1, y));
-  }
-  if x < cost_map.len() - 1 {
-    neighbors.push((x + 1, y));
-  }
-  if y > 0 {
-    neighbors.push((x, y - 1));
-  }
-  if y < cost_map.len() - 1 {
-    neighbors.push((x, y + 1));
-  }
-  let self_cost = cost_map[y][x];
-  let self_risk = risk_map[y][x];
-  let mut cost_changed = false;
-  for &(nx, ny) in neighbors.iter() {
-    if cost_map[ny][nx] == 0 {
-      continue;
-    }
-    let neighbor_cost = cost_map[ny][nx];
-    if self_cost > neighbor_cost + self_risk {
-      cost_map[y][x] = neighbor_cost + self_risk;
-      cost_changed = true;
-    }
-  }
-  if cost_changed {
-    for &(nx, ny) in neighbors.iter() {
-      if cost_map[ny][nx] == 0 {
-        continue;
+  let size = cost_map.len() as i32;
+  let neighbors = NEIGHBOR_DIFFS
+    .iter()
+    .map(|(dx, dy)| (x as i32 + dx, y as i32 + dy))
+    .filter(|&(x, y)| 0 <= x && x < size && 0 <= y && y < size);
+  let min_neighbor_cost = neighbors
+    .clone()
+    .map(|(x, y)| cost_map[y as usize][x as usize])
+    .filter(|&cost| cost != 0)
+    .min();
+
+  if let Some(neighbor_cost) = min_neighbor_cost {
+    if cost_map[y][x] > neighbor_cost + risk_map[y][x] {
+      cost_map[y][x] = neighbor_cost + risk_map[y][x];
+      for (x, y) in neighbors {
+        reassess_cost_at(x as usize, y as usize, cost_map, risk_map);
       }
-      reassess_cost_at(nx, ny, cost_map, risk_map);
     }
   }
 }
