@@ -63,3 +63,6 @@ Update: i ended up implementing Dijkstra's algorithm. Not generalized; a very ad
 
 ### Day 16: Packet Decoder
 Not a difficult challenge, but quite a bit of code needed. I used some OO, and the result ended up looking pretty legit :)
+
+### Day 17: Trick Shot
+Not much learned really, besides the fact that Rust's type inference is lovely. Kind of a brute force solution for a relatively simple problem. Not proud of not having found a more clever approach, but it totally works.
