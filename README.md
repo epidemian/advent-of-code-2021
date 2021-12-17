@@ -60,3 +60,6 @@ Oof, this one was challenging. I initially considered trying to find a path usin
 So i just hacked my way through trying to patch the first solution with some "reassessment" of path costs. It worked in the end, but i doubt this algorithm is calculating path cost for general cases, and it most likely is terribly inefficient.
 
 Update: i ended up implementing Dijkstra's algorithm. Not generalized; a very ad-hoc for this specific problem. It's a bit more code than the previous solution, but i feel it's quite more understandable. And it runs faster too :)
+
+### Day 16: Packet Decoder
+Not a difficult challenge, but quite a bit of code needed. I used some OO, and the result ended up looking pretty legit :)
