@@ -58,3 +58,5 @@ The naive solution of generating the polymer worked well for computing the 10 st
 Oof, this one was challenging. I initially considered trying to find a path using only right and down moves, as the example case only showcased moves in those directions. This greatly simplified the "path finding" algorithm, and luckily it worked for part 1. But not for part 2. Oh no. Path 2 required a more general solution, and damn it if i were to remember how Dijsktra's algorithm worked. I'm not even sure i ever knew it at any point in my life.
 
 So i just hacked my way through trying to patch the first solution with some "reassessment" of path costs. It worked in the end, but i doubt this algorithm is calculating path cost for general cases, and it most likely is terribly inefficient.
+
+Update: i ended up implementing Dijkstra's algorithm. Not generalized; a very ad-hoc for this specific problem. It's a bit more code than the previous solution, but i feel it's quite more understandable. And it runs faster too :)

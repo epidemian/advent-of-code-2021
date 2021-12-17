@@ -1,13 +1,16 @@
+use std::cmp::Ordering;
+use std::collections::BinaryHeap;
+
 pub fn run() {
   let risk_map: Vec<Vec<u32>> = include_str!("inputs/day15")
     .lines()
     .map(|l| l.chars().map(|ch| ch.to_digit(10).unwrap()).collect())
     .collect();
 
-  println!("{}", get_path_total_risk(&risk_map));
+  println!("{}", shortest_path(&risk_map));
 
   let full_risk_map = expand_map(&risk_map);
-  println!("{}", get_path_total_risk(&full_risk_map));
+  println!("{}", shortest_path(&full_risk_map));
 }
 
 fn expand_map(map: &Vec<Vec<u32>>) -> Vec<Vec<u32>> {
@@ -24,52 +27,69 @@ fn expand_map(map: &Vec<Vec<u32>>) -> Vec<Vec<u32>> {
   full_map
 }
 
-// This doesn't seem like a proper path-finding algorithm, but it worked for
-// this problem ¯\_(ツ)_/¯
-fn get_path_total_risk(risk_map: &Vec<Vec<u32>>) -> u32 {
+// A very ad-hoc attempt at Dijkstra's algorithm.
+fn shortest_path(risk_map: &Vec<Vec<u32>>) -> u32 {
   let size = risk_map.len();
-  let mut cost_map: Vec<Vec<u32>> = vec![vec![0; size]; size];
-  for x in 1..size {
-    cost_map[0][x] = cost_map[0][x - 1] + risk_map[0][x];
-  }
-  for y in 1..size {
-    cost_map[y][0] = cost_map[y - 1][0] + risk_map[y][0];
-  }
-  for y in 1..size {
-    for x in 1..size {
-      let cost_up = cost_map[y - 1][x];
-      let cost_left = cost_map[y][x - 1];
-      cost_map[y][x] = cost_up.min(cost_left) + risk_map[y][x];
-      if cost_up < cost_left {
-        reassess_cost_at(x - 1, y, &mut cost_map, risk_map);
-      } else {
-        reassess_cost_at(x, y - 1, &mut cost_map, risk_map);
+  let start = (0, 0);
+  let end = (size - 1, size - 1);
+
+  let mut unvisited = BinaryHeap::new();
+  let mut distances = vec![vec![u32::MAX; size]; size];
+
+  distances[start.1][start.0] = 0;
+  unvisited.push(Node {
+    position: start,
+    cost: 0,
+  });
+
+  while let Some(min_cost_node) = unvisited.pop() {
+    let Node { position, cost } = min_cost_node;
+    let (x, y) = position;
+
+    if position == end {
+      return cost;
+    }
+    if distances[y][x] < cost {
+      continue;
+    }
+
+    let neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+      .iter()
+      .map(|(dx, dy)| (x as i32 + dx, y as i32 + dy))
+      .filter(|&(x, y)| 0 <= x && x < size as i32 && 0 <= y && y < size as i32);
+
+    for (nx, ny) in neighbors {
+      let (nx, ny) = (nx as usize, ny as usize);
+      let neighbor_cost = cost + risk_map[ny][nx];
+      if neighbor_cost < distances[ny][nx] {
+        distances[ny][nx] = neighbor_cost;
+        unvisited.push(Node {
+          position: (nx, ny),
+          cost: neighbor_cost,
+        });
       }
     }
   }
-  cost_map[size - 1][size - 1]
+  unreachable!()
 }
 
-const NEIGHBOR_DIFFS: [(i32, i32); 4] = [(1, 0), (-1, 0), (0, 1), (0, -1)];
+#[derive(PartialEq, Eq)]
+struct Node {
+  position: (usize, usize),
+  cost: u32,
+}
 
-fn reassess_cost_at(x: usize, y: usize, cost_map: &mut Vec<Vec<u32>>, risk_map: &Vec<Vec<u32>>) {
-  let size = cost_map.len() as i32;
-  let neighbors = NEIGHBOR_DIFFS
-    .iter()
-    .map(|(dx, dy)| (x as i32 + dx, y as i32 + dy))
-    .filter(|&(x, y)| 0 <= x && x < size && 0 <= y && y < size);
-  let min_neighbor_cost = neighbors
-    .clone()
-    .map(|(x, y)| cost_map[y as usize][x as usize])
-    .filter(|&cost| cost != 0)
-    .min();
+impl Ord for Node {
+  fn cmp(&self, other: &Self) -> Ordering {
+    // Compare cost in the other way so the binary heap is min-sorted.
+    let cost_order = other.cost.cmp(&self.cost);
+    cost_order.then_with(|| self.position.cmp(&other.position))
+  }
+}
 
-  if let Some(neighbor_cost) = min_neighbor_cost {
-    if cost_map[y][x] > neighbor_cost + risk_map[y][x] {
-      cost_map[y][x] = neighbor_cost + risk_map[y][x];
-      for (x, y) in neighbors {
-        reassess_cost_at(x as usize, y as usize, cost_map, risk_map);
-      }
-    }
+// Rust requires this for some reason too.
+impl PartialOrd for Node {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
   }
 }
