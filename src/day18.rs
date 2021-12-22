@@ -1,192 +1,145 @@
-use serde_json::Value;
-use std::fmt;
-use std::ops;
-
 pub fn run() {
-  let snailfish_nums: Vec<SnailfishNumber> = include_str!("inputs/day18")
+  let snailfish_nums: Vec<_> = include_str!("inputs/day18")
     .lines()
-    .map(|l| SnailfishNumber::from_str(l))
+    .map(parse_snailfish_number)
     .collect();
 
   let mut sum = snailfish_nums[0].clone();
   for num in &snailfish_nums[1..] {
-    sum = sum.add(num);
+    sum = add(&sum, num);
   }
-
-  println!("{}", sum.magnitude());
+  println!("{}", magnitude(&sum));
 
   let mut max_magnitude = 0;
-  for n1 in &snailfish_nums {
-    for n2 in &snailfish_nums {
-      max_magnitude = max_magnitude.max(n1.add(n2).magnitude())
+  for n1 in snailfish_nums.iter() {
+    for n2 in snailfish_nums.iter() {
+      max_magnitude = max_magnitude.max(magnitude(&add(n1, n2)))
     }
   }
   println!("{}", max_magnitude);
 }
 
-#[derive(Debug, Clone)]
-enum SnailfishNumber {
+// Instead of modelling snailfish numbers as tree-like structures, just
+// represent them as a list of tokens and then manipulate them symbolically.
+type SnailfishTokens = Vec<Token>;
+
+#[derive(Debug, Clone, Copy)]
+enum Token {
+  LParen,
+  RParen,
   Number(u32),
-  Pair((Box<SnailfishNumber>, Box<SnailfishNumber>)),
 }
 
-impl SnailfishNumber {
-  fn from_str(s: &str) -> SnailfishNumber {
-    Self::from_json(&serde_json::from_str(s).unwrap())
-  }
+fn parse_snailfish_number(s: &str) -> SnailfishTokens {
+  s.chars()
+    .filter_map(|ch| match ch {
+      '[' => Some(Token::LParen),
+      ']' => Some(Token::RParen),
+      '0'..='9' => Some(Token::Number(ch.to_digit(10).unwrap())),
+      _ => None,
+    })
+    .collect()
+}
 
-  fn from_json(json: &Value) -> SnailfishNumber {
-    match json {
-      Value::Number(n) => SnailfishNumber::Number(n.as_u64().unwrap() as u32),
-      Value::Array(pair) => {
-        let left = Self::from_json(&pair[0]);
-        let right = Self::from_json(&pair[1]);
-        SnailfishNumber::Pair((Box::new(left), Box::new(right)))
-      }
-      _ => unreachable!(),
+fn add(lhs: &SnailfishTokens, rhs: &SnailfishTokens) -> SnailfishTokens {
+  let mut result = Vec::with_capacity(lhs.len() + rhs.len() + 2);
+  result.push(Token::LParen);
+  result.extend(lhs);
+  result.extend(rhs);
+  result.push(Token::RParen);
+
+  reduce(&mut result);
+  result
+}
+
+fn reduce(num: &mut SnailfishTokens) {
+  loop {
+    if explode(num) {
+      continue;
     }
-  }
-
-  fn add(&self, rhs: &SnailfishNumber) -> SnailfishNumber {
-    SnailfishNumber::Pair((Box::new(self.clone()), Box::new(rhs.clone()))).reduce()
-  }
-
-  fn reduce(&self) -> SnailfishNumber {
-    let mut result = self.clone();
-    loop {
-      if let Some(explode_result) = result.try_explode(0) {
-        result = explode_result.result;
-        continue;
-      }
-      if let Some(split_result) = result.try_split() {
-        result = split_result;
-        continue;
-      }
-      break;
+    if split(num) {
+      continue;
     }
-    result
+    break;
   }
+}
 
-  fn try_explode(&self, depth: usize) -> Option<ExplodeResult> {
-    match self {
-      SnailfishNumber::Number(_) => None,
-      SnailfishNumber::Pair((left, right)) => {
+fn explode(tokens: &mut SnailfishTokens) -> bool {
+  let mut explode_index = None;
+  let mut depth = 0;
+  for (i, token) in tokens.iter().enumerate() {
+    match token {
+      Token::LParen => {
         if depth == 4 {
-          if let (SnailfishNumber::Number(l), SnailfishNumber::Number(r)) =
-            (left.as_ref(), right.as_ref())
-          {
-            return Some(ExplodeResult {
-              result: SnailfishNumber::Number(0),
-              left: Some(*l),
-              right: Some(*r),
-            });
+          explode_index = Some(i);
+          break;
+        }
+        depth += 1;
+      }
+      Token::RParen => depth -= 1,
+      _ => {}
+    }
+  }
+  if let Some(index) = explode_index {
+    match &tokens[index..index + 4] {
+      &[Token::LParen, Token::Number(exploded_l), Token::Number(exploded_r), Token::RParen] => {
+        tokens.splice(index..index + 4, [Token::Number(0)]);
+        for i in (0..index).rev() {
+          if let Token::Number(first_num_left) = tokens[i] {
+            tokens[i] = Token::Number(first_num_left + exploded_l);
+            break;
           }
         }
-
-        if let Some(explode_result) = left.try_explode(depth + 1) {
-          let new_right = if let Some(right_overflow) = explode_result.right {
-            right.add_to_left(right_overflow)
-          } else {
-            right.as_ref().clone()
-          };
-          Some(ExplodeResult {
-            result: SnailfishNumber::Pair((Box::new(explode_result.result), Box::new(new_right))),
-            left: explode_result.left,
-            right: None,
-          })
-        } else if let Some(explode_result) = right.try_explode(depth + 1) {
-          let new_left = if let Some(left_overflow) = explode_result.left {
-            left.add_to_right(left_overflow)
-          } else {
-            left.as_ref().clone()
-          };
-          Some(ExplodeResult {
-            result: SnailfishNumber::Pair((Box::new(new_left), Box::new(explode_result.result))),
-            left: None,
-            right: explode_result.right,
-          })
-        } else {
-          None
+        for i in index + 1..tokens.len() {
+          if let Token::Number(first_num_right) = tokens[i] {
+            tokens[i] = Token::Number(first_num_right + exploded_r);
+            break;
+          }
         }
       }
+      unexpected => panic!("unexpected pattern on explosion {:?}", unexpected),
     }
+    return true;
   }
+  false
+}
 
-  fn add_to_left(&self, n: u32) -> SnailfishNumber {
-    match self {
-      SnailfishNumber::Number(n2) => SnailfishNumber::Number(n + n2),
-      SnailfishNumber::Pair((left, right)) => SnailfishNumber::Pair((
-        Box::new(left.add_to_left(n)),
-        Box::new(right.as_ref().clone()),
-      )),
-    }
-  }
-
-  fn add_to_right(&self, n: u32) -> SnailfishNumber {
-    match self {
-      SnailfishNumber::Number(n2) => SnailfishNumber::Number(n + n2),
-      SnailfishNumber::Pair((left, right)) => SnailfishNumber::Pair((
-        Box::new(left.as_ref().clone()),
-        Box::new(right.add_to_right(n)),
-      )),
-    }
-  }
-
-  fn try_split(&self) -> Option<SnailfishNumber> {
-    match self {
-      SnailfishNumber::Number(n) => {
-        if *n > 9 {
-          let left = SnailfishNumber::Number(n / 2);
-          let right = SnailfishNumber::Number((n + 1) / 2);
-          Some(SnailfishNumber::Pair((Box::new(left), Box::new(right))))
-        } else {
-          None
-        }
+fn split(tokens: &mut SnailfishTokens) -> bool {
+  for (index, token) in tokens.iter().enumerate() {
+    match token {
+      &Token::Number(n) if n > 9 => {
+        tokens.splice(
+          index..=index,
+          [
+            Token::LParen,
+            Token::Number(n / 2),
+            Token::Number((n + 1) / 2),
+            Token::RParen,
+          ],
+        );
+        return true;
       }
-      SnailfishNumber::Pair((left, right)) => {
-        if let Some(split_result) = left.try_split() {
-          Some(SnailfishNumber::Pair((
-            Box::new(split_result),
-            Box::new(right.as_ref().clone()),
-          )))
-        } else if let Some(split_result) = right.try_split() {
-          Some(SnailfishNumber::Pair((
-            Box::new(left.as_ref().clone()),
-            Box::new(split_result),
-          )))
-        } else {
-          None
-        }
+      _ => {}
+    }
+  }
+  false
+}
+
+fn magnitude(tokens: &SnailfishTokens) -> u32 {
+  // Keep a stack of magnitudes to the left of the current token. Whenever a
+  // pair closes, pop the last two magnitudes and compute the pair's magnitude.
+  let mut stack = vec![];
+  for token in tokens {
+    match token {
+      Token::Number(n) => stack.push(*n),
+      Token::RParen => {
+        let r = stack.pop().unwrap();
+        let l = stack.pop().unwrap();
+        stack.push(3 * l + 2 * r);
       }
+      _ => {}
     }
   }
-
-  fn magnitude(&self) -> u32 {
-    match self {
-      SnailfishNumber::Number(n) => *n,
-      SnailfishNumber::Pair((left, right)) => 3 * left.magnitude() + 2 * right.magnitude(),
-    }
-  }
-}
-
-impl ops::Add<SnailfishNumber> for SnailfishNumber {
-  type Output = SnailfishNumber;
-  fn add(self, rhs: SnailfishNumber) -> SnailfishNumber {
-    SnailfishNumber::Pair((Box::new(self), Box::new(rhs))).reduce()
-  }
-}
-
-impl fmt::Display for SnailfishNumber {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      SnailfishNumber::Number(n) => write!(f, "{}", n),
-      SnailfishNumber::Pair((l, r)) => write!(f, "[{},{}]", l, r),
-    }
-  }
-}
-
-struct ExplodeResult {
-  result: SnailfishNumber,
-  left: Option<u32>,
-  right: Option<u32>,
+  assert_eq!(stack.len(), 1);
+  stack[0]
 }
