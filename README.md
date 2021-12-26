@@ -68,8 +68,12 @@ Not a difficult challenge, but quite a bit of code needed. I used some OO, and t
 Not much learned really, besides the fact that Rust's type inference is lovely. Kind of a brute force solution for a relatively simple problem. Not proud of not having found a more clever approach, but it totally works.
 
 ### Day 18: Snailfish
-Wow, this was the hairiest to implement in Rust *by far*. The biggest challenge was to do proper memory management of a tree-like structure that needs to be manipulated. After a lot of fighting with the borrow checker, the [solution i reached](src/day18_oo.rs) was quite OO-ish and looked fairly alright from the point of view of data modelling and delegation, but i definitely didn't like the mess of `Rc`s it was, and how complicated exploding and splitting snailfish numbers became.
+Wow, so far this has been the hairiest to implement in Rust *by far*. The biggest challenge was to do proper memory management of a tree-like structure that needs to be manipulated. After a lot of fighting with the borrow checker, the [solution i reached](src/day18_oo.rs) was quite OO-ish and looked fairly alright from the point of view of data modelling and delegation, but i definitely didn't like the mess of `Rc`s it was, and how complicated exploding and splitting snailfish numbers became.
 
 So i ended up [trying again](src/day18.rs), this time representing each snailfish number as simply a list of tokens, which made implementing exploding much easier, as the logic of "adding the pair's left value to the first regular number to the left of the exploding pair (if any)" is quite trivial when the structure is linear instead of nested. This modelling also avoided any memory management shenanigans and borrow-checking-related pains.
 
 The only downside of the second approach was that calculating the snailfish number's magnitude required a bit more bookkeeping and somewhat involved logic, while doing so in the OO tree-like approach was as straightforward as it could be: just classic object delegation.
+
+
+### Day 20: Trench Map
+I skipped day 19 to complete this simpler cellular automata sort of puzzle. The infiniteness of the grid was simulated by simply pre-extending the image by the amount of necessary steps. The cellular automata rules given by the input had a "trick" of making all the dark pixels on the infinitely-extended image turn to light and then back to dark on the next step.
