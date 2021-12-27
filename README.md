@@ -74,6 +74,9 @@ So i ended up [trying again](src/day18.rs), this time representing each snailfis
 
 The only downside of the second approach was that calculating the snailfish number's magnitude required a bit more bookkeeping and somewhat involved logic, while doing so in the OO tree-like approach was as straightforward as it could be: just classic object delegation.
 
-
 ### Day 20: Trench Map
 I skipped day 19 to complete this simpler cellular automata sort of puzzle. The infiniteness of the grid was simulated by simply pre-extending the image by the amount of necessary steps. The cellular automata rules given by the input had a "trick" of making all the dark pixels on the infinitely-extended image turn to light and then back to dark on the next step.
+
+
+### Day 21: Dirac Dice
+Part 1 was quite easy with a naive solution. Part 2 was one of *those* maths-heavy ones. Managed to get a recursive solution that doesn't take a humongous amount of time to compute. Apparently there are much faster solutions, but at least i can understand mine :)
