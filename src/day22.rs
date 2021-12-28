@@ -5,8 +5,9 @@ pub fn run() {
     .collect();
 
   let init_cuboid = Cuboid {
-    start: (-50, -50, -50),
-    end: (50, 50, 50),
+    xs: Range::new(-50, 50),
+    ys: Range::new(-50, 50),
+    zs: Range::new(-50, 50),
   };
   let init_instructions: Vec<Instruction> = all_instructions
     .iter()
@@ -18,87 +19,94 @@ pub fn run() {
 }
 
 fn run_instructions(instructions: Vec<Instruction>) -> i64 {
-  let mut cuboids: Vec<Instruction> = vec![];
+  let mut processed: Vec<Instruction> = vec![];
 
   for (value, cuboid) in instructions {
-    let intersections: Vec<Instruction> = cuboids
+    let negated_intersections: Vec<Instruction> = processed
       .iter()
       .filter_map(|(v, c)| c.intersect(&cuboid).map(|i| (-v, i)))
       .collect();
-    cuboids.extend(intersections);
+    // Avoid counting intersections multiple times by adding their negative values.
+    processed.extend(negated_intersections);
     if value == ON {
-      cuboids.push((value, cuboid))
+      processed.push((value, cuboid))
     }
   }
 
-  cuboids.iter().map(|(val, c)| *val as i64 * c.size()).sum()
+  processed.iter().map(|(val, c)| *val * c.size()).sum()
 }
 
-type Instruction = (i32, Cuboid);
-type Point = (i32, i32, i32);
+const ON: i64 = 1;
+const OFF: i64 = -1;
 
-#[derive(Debug)]
+type Instruction = (i64, Cuboid);
+
 struct Cuboid {
-  start: Point,
-  end: Point,
+  xs: Range,
+  ys: Range,
+  zs: Range,
 }
 
-const ON: i32 = 1;
-const OFF: i32 = -1;
+struct Range {
+  start: i32,
+  end: i32,
+}
 
 fn parse_instruction(s: &str) -> Instruction {
   let (value, coords) = s.split_once(" ").unwrap();
-  let coords: Vec<_> = coords
-    .split(",")
-    .map(|s| {
-      let (start, end) = s.split_once("=").unwrap().1.split_once("..").unwrap();
-      (start.parse().unwrap(), end.parse().unwrap())
-    })
-    .collect();
-
   let value = if value == "on" { ON } else { OFF };
-  let cuboid = Cuboid {
-    start: (coords[0].0, coords[1].0, coords[2].0),
-    end: (coords[0].1, coords[1].1, coords[2].1),
-  };
-  (value, cuboid)
-}
-
-fn intersect_ranges(range_a: (i32, i32), range_b: (i32, i32)) -> Option<(i32, i32)> {
-  let start = range_a.0.max(range_b.0);
-  let end = range_a.1.min(range_b.1);
-  if start <= end {
-    Some((start, end))
-  } else {
-    None
-  }
+  (value, Cuboid::parse(coords))
 }
 
 impl Cuboid {
+  fn parse(s: &str) -> Cuboid {
+    let mut ranges = s
+      .split(",")
+      .map(|s| Range::parse(s.split_once("=").unwrap().1));
+    Cuboid {
+      xs: ranges.next().unwrap(),
+      ys: ranges.next().unwrap(),
+      zs: ranges.next().unwrap(),
+    }
+  }
+
   fn intersect(&self, other: &Cuboid) -> Option<Cuboid> {
-    let (sx, sy, sz) = self.start;
-    let (ex, ey, ez) = self.end;
-    let (other_sx, other_sy, other_sz) = other.start;
-    let (other_ex, other_ey, other_ez) = other.end;
     match (
-      intersect_ranges((sx, ex), (other_sx, other_ex)),
-      intersect_ranges((sy, ey), (other_sy, other_ey)),
-      intersect_ranges((sz, ez), (other_sz, other_ez)),
+      self.xs.intersect(&other.xs),
+      self.ys.intersect(&other.ys),
+      self.zs.intersect(&other.zs),
     ) {
-      (Some((sx, ex)), Some((sy, ey)), Some((sz, ez))) => Some(Cuboid {
-        start: (sx, sy, sz),
-        end: (ex, ey, ez),
-      }),
+      (Some(xs), Some(ys), Some(zs)) => Some(Cuboid { xs, ys, zs }),
       _ => None,
     }
   }
 
   fn size(&self) -> i64 {
-    let (sx, sy, sz) = self.start;
-    let (ex, ey, ez) = self.end;
-    let dx = (ex - sx + 1) as i64;
-    let dy = (ey - sy + 1) as i64;
-    let dz = (ez - sz + 1) as i64;
-    dx * dy * dz
+    self.xs.size() as i64 * self.ys.size() as i64 * self.zs.size() as i64
+  }
+}
+
+impl Range {
+  fn parse(s: &str) -> Range {
+    let (start, end) = s.split_once("..").unwrap();
+    Range::new(start.parse().unwrap(), end.parse().unwrap())
+  }
+
+  fn new(start: i32, end: i32) -> Range {
+    Range { start, end }
+  }
+
+  fn intersect(&self, other: &Range) -> Option<Range> {
+    let start = self.start.max(other.start);
+    let end = self.end.min(other.end);
+    if start <= end {
+      Some(Range { start, end })
+    } else {
+      None
+    }
+  }
+
+  fn size(&self) -> i32 {
+    self.end - self.start + 1
   }
 }

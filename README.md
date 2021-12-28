@@ -80,3 +80,9 @@ I skipped day 19 to complete this simpler cellular automata sort of puzzle. The 
 
 ### Day 21: Dirac Dice
 Part 1 was quite easy with a naive solution. Part 2 was one of *those* maths-heavy ones. Managed to get a recursive solution that doesn't take a humongous amount of time to compute. Apparently there are much faster solutions, but at least i can understand mine :)
+
+
+### Day 22: Reactor Reboot
+Part 1 was solvable by "brute force" using a naive implementation of a 3D grid representing all reactor cubes. Part 2 required some cleverness on the cuboids' representation, as representing and processing the entire reactor grid became unfeasible.
+
+It was a rather nice exercise in decomposition and data modelling. The most enjoyable part was changing the cuboid representation from two (x, y, z) tuples to three (start, end) ranges, which allowed a much more natural delegation and decomposition of both algorithms and parsing :)
