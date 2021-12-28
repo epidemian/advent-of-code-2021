@@ -19,6 +19,7 @@ mod day17;
 mod day18;
 mod day20;
 mod day21;
+mod day22;
 
 fn main() {
     let days = [
@@ -43,6 +44,7 @@ fn main() {
         || {}, // TODO
         day20::run,
         day21::run,
+        day22::run,
     ];
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
