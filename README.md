@@ -55,7 +55,7 @@ A very fun geometric puzzle. Got a dumb off-by-one error when printing the paper
 The naive solution of generating the polymer worked well for computing the 10 steps of part 1, but completely failed for the 40 steps of part 2, as that would require TBs of storage. I think that the idea of keeping count of all element pairs and thinking only in terms of what new pairs those generate was inspired by Day 6: Lanternfish, which also featured exponential growth :)
 
 ### Day 15: Chiton
-Oof, this one was challenging. I initially considered trying to find a path using only right and down moves, as the example case only showcased moves in those directions. This greatly simplified the "path finding" algorithm, and luckily it worked for part 1. But not for part 2. Oh no. Path 2 required a more general solution, and damn it if i were to remember how Dijsktra's algorithm worked. I'm not even sure i ever knew it at any point in my life.
+Oof, this one was challenging. I initially considered trying to find a path using only right and down moves, as the example case only showcased moves in those directions. This greatly simplified the "path finding" algorithm, and luckily it worked for part 1. But not for part 2. Oh no. Path 2 required a more general solution, and damn it if i were to remember how Dijkstra's algorithm worked. I'm not even sure i ever knew it at any point in my life.
 
 So i just hacked my way through trying to patch the first solution with some "reassessment" of path costs. It worked in the end, but i doubt this algorithm is calculating path cost for general cases, and it most likely is terribly inefficient.
 
@@ -86,3 +86,8 @@ Part 1 was quite easy with a naive solution. Part 2 was one of *those* maths-hea
 Part 1 was solvable by "brute force" using a naive implementation of a 3D grid representing all reactor cubes. Part 2 required some cleverness on the cuboids' representation, as representing and processing the entire reactor grid became unfeasible.
 
 It was a rather nice exercise in decomposition and data modelling. The most enjoyable part was changing the cuboid representation from two (x, y, z) tuples to three (start, end) ranges, which allowed a much more natural delegation and decomposition of both algorithms and parsing :)
+
+### Day 23: Amphipod
+I had no idea where to start implementing this one, but the moves of the amphipods seemed easy to understand, so after some trial and error i managed to solve part 1 [by hand](src/day23.txt).
+
+After that, and seeing that part 2 was about, i now have an idea of what to do for solving this with code: model the state of the amphipod burrow and implement a shortest path algorithm to find the minimal cost to move between the initial state and the goal state where all amphipods are in their destination rooms.
