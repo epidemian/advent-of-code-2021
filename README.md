@@ -91,3 +91,5 @@ It was a rather nice exercise in decomposition and data modelling. The most enjo
 I had no idea where to start implementing this one, but the moves of the amphipods seemed easy to understand, so after some trial and error i managed to solve part 1 [by hand](src/day23.txt).
 
 After that, and seeing that part 2 was about, i now have an idea of what to do for solving this with code: model the state of the amphipod burrow and implement a shortest path algorithm to find the minimal cost to move between the initial state and the goal state where all amphipods are in their destination rooms.
+
+Update: i implement the above strategy. It took a while to get all conditions right, and i used an external pathfinding library. I might get rif of the latter if i feel inspired to code a generic Dijkstra.
