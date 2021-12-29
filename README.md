@@ -92,4 +92,8 @@ I had no idea where to start implementing this one, but the moves of the amphipo
 
 After that, and seeing that part 2 was about, i now have an idea of what to do for solving this with code: model the state of the amphipod burrow and implement a shortest path algorithm to find the minimal cost to move between the initial state and the goal state where all amphipods are in their destination rooms.
 
-Update: i implement the above strategy. It took a while to get all conditions right, and i used an external pathfinding library. I might get rif of the latter if i feel inspired to code a generic Dijkstra.
+Update: i implemented the above strategy. It took a while to get all conditions right, and i used an external pathfinding library. I might get rif of the latter if i feel inspired to code a generic Dijkstra.
+
+Update 2: implementing a generic Dijkstra's algorithm was interesting. I learned about type parameter trait constraints, which is a bit abstract, but makes sense after some getting used to it. And also learned about Rust rules for importing modules, which are not super intuitive IMO.
+
+The generic algorithm ended up being slower than the one in the [`pathfinding`](https://docs.rs/pathfinding/latest/pathfinding/) crate, which is to be expected. And it's also slower then the ad-hoc algorithm i did for day 15, which is also to be expected, since that one used a 2D vector for storing distances, while the generic algorithm must use a more generic data structure — a HashMap in this case. But even though it's slower, i decided to use it for both days' solutions, since it was a nice learning experience, and that also leaves the project dependency-free, and all code is in one place :)

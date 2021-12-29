@@ -1,4 +1,4 @@
-use pathfinding::prelude::dijkstra;
+use crate::dijkstra;
 
 pub fn run() {
   // #############
@@ -56,8 +56,7 @@ impl<const S: usize> State<S> {
       rooms: [[Some(A); S], [Some(B); S], [Some(C); S], [Some(D); S]],
     };
 
-    let (_path, energy) = dijkstra(self, Self::next_moves, |state| *state == goal).unwrap();
-    energy
+    dijkstra::shortest_path(self, &goal, Self::next_moves).unwrap()
   }
 
   fn next_moves(&self) -> Vec<(State<S>, usize)> {
