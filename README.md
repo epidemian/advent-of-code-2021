@@ -97,3 +97,6 @@ Update: i implemented the above strategy. It took a while to get all conditions 
 Update 2: implementing a generic Dijkstra's algorithm was interesting. I learned about type parameter trait constraints, which is a bit abstract, but makes sense after some getting used to it. And also learned about Rust rules for importing modules, which are not super intuitive IMO.
 
 The generic algorithm ended up being slower than the one in the [`pathfinding`](https://docs.rs/pathfinding/latest/pathfinding/) crate, which is to be expected. And it's also slower then the ad-hoc algorithm i did for day 15, which is also to be expected, since that one used a 2D vector for storing distances, while the generic algorithm must use a more generic data structure — a HashMap in this case. But even though it's slower, i decided to use it for both days' solutions, since it was a nice learning experience, and that also leaves the project dependency-free, and all code is in one place :)
+
+### Day 25: Sea Cucumber
+Nice to have a simple and straightforward ending puzzle. Went all-in with a mutable 2D vec :)
