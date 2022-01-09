@@ -100,3 +100,8 @@ The generic algorithm ended up being slower than the one in the [`pathfinding`](
 
 ### Day 25: Sea Cucumber
 Nice to have a simple and straightforward ending puzzle. Went all-in with a mutable 2D vec :)
+
+### Day 19: Beacon Scanner
+I'm writing this here since i did this one after day 25. Initially i left it for later because the task seemed too daunting and i couldn't even think of how to approach this. But it turned out the puzzle wasn't *that* difficult; i just needed to break it up into more manageable chunks and start with something with i can chew on — like calculating all the rotations for a 3D point — instead of trying to understand and process all the task at once; something that i tend to do more often than i'd like to admit.
+
+Still, the puzzle was by no means trivial, and the algorithmic complexity of my solution leaves much to be desired, but it works, and i'm happy to have found a working solution :)
