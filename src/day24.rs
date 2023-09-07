@@ -2,6 +2,9 @@ use std::collections::HashMap;
 
 pub fn run() {
     let program = parse_program(include_str!("inputs/day24"));
+
+    // Split the program into "blocks", which consist of a single `inp` instruction and its
+    // following instructions until the next `inp`.
     let mut blocks = vec![];
     for ins in program.into_iter() {
         if matches!(ins, Instruction::Inp(_)) {
@@ -17,6 +20,28 @@ pub fn run() {
     let mut max_inputs: HashMap<_, _> = HashMap::from_iter([(0, vec![])]);
     let mut min_inputs: HashMap<_, _> = HashMap::from_iter([(0, vec![])]);
     for block in blocks.iter() {
+        // Each block of this program behaves like this pseudo-code:
+        //
+        // let w = input();
+        // let x = z % 26 + C1;
+        // if C1 < 0 {
+        //     z /= 26
+        // }
+        // if x != w {
+        //     z *= 26
+        //     z += w + C2
+        // }
+        //
+        // The variables w, x and y are all "local" to each block. Only the variable z has a value
+        // that persists between blocks, and we want that to end at 0.
+        // C1 and C2 are constants and are different in each block.
+        // There are 14 blocks in total, and 7 of them have C1 > 10, so the condition of x != w is
+        // always true no matter the input w, and those blocks increment z by 26-ish times.
+        // The other 7 blocks have a negative C1. In those ones, we need to make sure that x == w,
+        // by choosing the correct w input so that z doesn't get bigger and instead gets rounded
+        // down 26 times.
+        // This code picks the correct w input values for z to eventually go down to 0.
+
         let mut can_reduce_z = false;
         for z0 in 0..26 {
             for w in 1..=9 {
