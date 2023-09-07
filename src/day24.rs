@@ -24,11 +24,11 @@ pub fn run() {
     println!("{min_model_number}");
 }
 
-fn find_model_number<P>(blocks: &[Vec<Instruction>], pick_inputs: P) -> String
+fn find_model_number<P>(blocks: &[Vec<Instruction>], pick_inputs: P) -> i64
 where
-    P: Fn(Vec<i64>, Vec<i64>) -> Vec<i64>,
+    P: Fn(i64, i64) -> i64,
 {
-    let mut inputs_by_z: HashMap<_, _> = HashMap::from_iter([(0, vec![])]);
+    let mut inputs_by_z = HashMap::from_iter([(0, 0)]);
     for block in blocks.iter() {
         // Each block of this program behaves like this pseudo-code:
         //
@@ -62,15 +62,14 @@ where
             }
         }
 
-        let mut new_inputs_by_z: HashMap<i64, Vec<i64>> = HashMap::new();
+        let mut new_inputs_by_z = HashMap::new();
         for (prev_z, prev_inputs) in inputs_by_z.iter() {
             for w in 1..=9 {
                 let [.., z] = run_alu_program(block, &[w], [0, 0, 0, *prev_z]);
                 if (can_reduce_z && z == *prev_z / 26) || !can_reduce_z {
-                    let mut inputs = prev_inputs.clone();
-                    inputs.push(w);
+                    let inputs = *prev_inputs * 10 + w;
                     if let Some(v) = new_inputs_by_z.get_mut(&z) {
-                        *v = pick_inputs(v.clone(), inputs);
+                        *v = pick_inputs(*v, inputs);
                     } else {
                         new_inputs_by_z.insert(z, inputs);
                     }
@@ -81,12 +80,7 @@ where
     }
     assert_eq!(inputs_by_z.len(), 1);
 
-    let inputs = inputs_by_z.values().next().unwrap();
-    inputs
-        .iter()
-        .map(|w| w.to_string())
-        .collect::<Vec<_>>()
-        .join("")
+    *inputs_by_z.values().next().unwrap()
 }
 
 fn run_alu_program(program: &[Instruction], inputs: &[i64], initial_vars: [i64; 4]) -> [i64; 4] {
