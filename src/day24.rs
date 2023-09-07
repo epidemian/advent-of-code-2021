@@ -6,7 +6,7 @@ pub fn run() {
     // Split the program into "blocks", which consist of a single `inp` instruction and its
     // following instructions until the next `inp`.
     let mut blocks = vec![];
-    for ins in program.into_iter() {
+    for ins in program {
         if matches!(ins, Instruction::Inp(_)) {
             blocks.push(vec![ins]);
         } else {
