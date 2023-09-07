@@ -94,24 +94,23 @@ fn run_alu_program(program: &[Instruction], inputs: &[i64], initial_vars: [i64; 
         match ins {
             Instruction::Inp(var) => {
                 let val = *input.next().expect("insufficient inputs for program");
-                vars[*var as usize] = val;
+                vars[*var] = val;
             }
-            Instruction::Add(a, b) => vars[*a as usize] = vars[*a as usize] + b.value(&vars),
-            Instruction::Mul(a, b) => vars[*a as usize] = vars[*a as usize] * b.value(&vars),
-            Instruction::Div(a, b) => {
-                let b = b.value(&vars);
-                assert_ne!(b, 0);
-                vars[*a as usize] = vars[*a as usize] / b
-            }
-            Instruction::Mod(a, b) => {
-                let a_val = vars[*a as usize];
-                let b_val = b.value(&vars);
-                assert!(a_val >= 0);
-                assert!(b_val > 0);
-                vars[*a as usize] = a_val % b_val
-            }
-            Instruction::Eql(a, b) => {
-                vars[*a as usize] = (vars[*a as usize] == b.value(&vars)) as i64
+            Instruction::Op(op, a, b) => {
+                vars[*a] = {
+                    let a = vars[*a];
+                    let b = match b {
+                        Operand::Var(var) => vars[*var],
+                        Operand::Lit(num) => *num,
+                    };
+                    match op {
+                        Op::Add => a + b,
+                        Op::Mul => a * b,
+                        Op::Div => a / b,
+                        Op::Mod => a % b,
+                        Op::Eql => (a == b) as i64,
+                    }
+                }
             }
         }
     }
@@ -119,44 +118,26 @@ fn run_alu_program(program: &[Instruction], inputs: &[i64], initial_vars: [i64; 
     vars
 }
 
-#[derive(Debug, Copy, Clone)]
-enum Var {
-    W = 0,
-    X,
-    Y,
-    Z,
+enum Instruction {
+    Inp(usize),
+    Op(Op, usize, Operand),
 }
 
-#[derive(Debug)]
 enum Operand {
-    Var(Var),
+    Var(usize),
     Lit(i64),
 }
-impl Operand {
-    fn value(&self, vars: &[i64; 4]) -> i64 {
-        match self {
-            Operand::Var(var) => vars[*var as usize],
-            Operand::Lit(num) => *num,
-        }
-    }
-}
 
-#[derive(Debug)]
-enum Instruction {
-    Inp(Var),
-    Add(Var, Operand),
-    Mul(Var, Operand),
-    Div(Var, Operand),
-    Mod(Var, Operand),
-    Eql(Var, Operand),
+enum Op {
+    Add,
+    Mul,
+    Div,
+    Mod,
+    Eql,
 }
 
 fn parse_program(input: &str) -> Vec<Instruction> {
-    input
-        .lines()
-        .filter(|line| !line.is_empty())
-        .map(parse_instruction)
-        .collect()
+    input.lines().map(parse_instruction).collect()
 }
 
 fn parse_instruction(line: &str) -> Instruction {
@@ -170,25 +151,26 @@ fn parse_instruction(line: &str) -> Instruction {
             } else {
                 Operand::Var(parse_var(b))
             };
-            match op {
-                "add" => Instruction::Add(a, b),
-                "mul" => Instruction::Mul(a, b),
-                "div" => Instruction::Div(a, b),
-                "mod" => Instruction::Mod(a, b),
-                "eql" => Instruction::Eql(a, b),
+            let op = match op {
+                "add" => Op::Add,
+                "mul" => Op::Mul,
+                "div" => Op::Div,
+                "mod" => Op::Mod,
+                "eql" => Op::Eql,
                 _ => unreachable!("invalid instruction '{op}'"),
-            }
+            };
+            Instruction::Op(op, a, b)
         }
         _ => unreachable!("invalid instruction: '{line}'"),
     }
 }
 
-fn parse_var(var: &str) -> Var {
+fn parse_var(var: &str) -> usize {
     match var {
-        "w" => Var::W,
-        "x" => Var::X,
-        "y" => Var::Y,
-        "z" => Var::Z,
+        "w" => 0,
+        "x" => 1,
+        "y" => 2,
+        "z" => 3,
         _ => unreachable!("invalid variable '{var}'"),
     }
 }
