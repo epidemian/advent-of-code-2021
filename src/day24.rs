@@ -66,7 +66,8 @@ where
         for (prev_z, prev_inputs) in inputs_by_z.iter() {
             for w in 1..=9 {
                 let [.., z] = run_alu_program(block, &[w], [0, 0, 0, *prev_z]);
-                if (can_reduce_z && z == *prev_z / 26) || !can_reduce_z {
+                let input_reduces_z = z == *prev_z / 26;
+                if input_reduces_z || !can_reduce_z {
                     let inputs = *prev_inputs * 10 + w;
                     if let Some(v) = new_inputs_by_z.get_mut(&z) {
                         *v = pick_inputs(*v, inputs);
