@@ -86,7 +86,7 @@ where
 
 fn run_alu_program(program: &[Instruction], inputs: &[i64], initial_vars: [i64; 4]) -> [i64; 4] {
     let mut vars = initial_vars;
-    let mut input = inputs.into_iter();
+    let mut input = inputs.iter();
 
     for ins in program {
         match ins {
